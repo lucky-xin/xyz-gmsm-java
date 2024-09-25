@@ -43,9 +43,10 @@ import java.util.Objects;
  * @since 2024-09-25
  */
 public class SM2Encryption {
-    private BigInteger privateKey;
-    private byte[] publicKey;
+    private final BigInteger privateKey;
+    private final byte[] publicKey;
     private static final String EC = "EC";
+    private static final byte X_04 = 0x04;
     private static final BouncyCastleProvider PROVIDER = new BouncyCastleProvider();
 
     static {
@@ -112,12 +113,12 @@ public class SM2Encryption {
         // 获取一条SM2曲线参数
         X9ECParameters parameters = GMNamedCurves.getByOID(sm2p256v1);
         // 构造ECC算法参数，曲线方程、椭圆曲线G点、大整数N
-        ECNamedDomainParameters namedDomainParameters = new ECNamedDomainParameters(
-                sm2p256v1, parameters.getCurve(), parameters.getG(), parameters.getN());
+        ECNamedDomainParameters domainParameters =
+                new ECNamedDomainParameters(sm2p256v1, parameters.getCurve(), parameters.getG(), parameters.getN());
         //提取公钥点
         ECPoint pukPoint = parameters.getCurve().decodePoint(publicKey);
         // 公钥前面的02或者03表示是压缩公钥，04表示未压缩公钥, 04的时候，可以去掉前面的04
-        ECPublicKeyParameters publicKeyParameters = new ECPublicKeyParameters(pukPoint, namedDomainParameters);
+        ECPublicKeyParameters publicKeyParameters = new ECPublicKeyParameters(pukPoint, domainParameters);
         SM2Engine sm2Engine = new SM2Engine(mode);
         SecureRandom secureRandom = new SecureRandom();
         // 设置sm2为加密模式
@@ -128,52 +129,66 @@ public class SM2Encryption {
     /**
      * SM2解密算法
      *
-     * @param cipherData 密文数据
-     * @param mode       密文排列方式
-     * @return
+     * @param cipher 密文数据
+     * @param mode   密文排列方式
+     * @return byte[]
      */
-    public byte[] decrypt(byte[] cipherData, SM2Engine.Mode mode) throws InvalidCipherTextException {
+    public byte[] decrypt(byte[] cipher, SM2Engine.Mode mode) throws InvalidCipherTextException {
         final ASN1ObjectIdentifier sm2p256v1 = GMObjectIdentifiers.sm2p256v1;
         //获取一条SM2曲线参数
         X9ECParameters parameters = GMNamedCurves.getByOID(sm2p256v1);
         // 构造ECC算法参数，曲线方程、椭圆曲线G点、大整数N
-        ECNamedDomainParameters namedDomainParameters = new ECNamedDomainParameters(
-                sm2p256v1, parameters.getCurve(), parameters.getG(), parameters.getN());
+        ECNamedDomainParameters namedDomainParameters =
+                new ECNamedDomainParameters(sm2p256v1, parameters.getCurve(), parameters.getG(), parameters.getN());
         ECPrivateKeyParameters privateKeyParameters = new ECPrivateKeyParameters(privateKey, namedDomainParameters);
         SM2Engine sm2Engine = new SM2Engine(mode);
         // 设置sm2为解密模式
         sm2Engine.init(false, privateKeyParameters);
         // 使用BC库加解密时密文以04开头，传入的密文前面没有04则补上
-        if (cipherData[0] == 0x04) {
-            return sm2Engine.processBlock(cipherData, 0, cipherData.length);
+        if (cipher[0] == X_04) {
+            return sm2Engine.processBlock(cipher, 0, cipher.length);
         } else {
-            byte[] bytes = new byte[cipherData.length + 1];
-            bytes[0] = 0x04;
-            System.arraycopy(cipherData, 0, bytes, 1, cipherData.length);
+            byte[] bytes = new byte[cipher.length + 1];
+            bytes[0] = X_04;
+            System.arraycopy(cipher, 0, bytes, 1, cipher.length);
             return sm2Engine.processBlock(bytes, 0, bytes.length);
         }
     }
 
-    public static SM2Encryption fromBase64(String privateKeyStr, String publicKeyStr) {
-        byte[] publicKey = Base64.getDecoder().decode(publicKeyStr);
-        BigInteger privateKey = new BigInteger(Base64.getDecoder().decode(privateKeyStr));
+    /**
+     * 根据私钥/公钥base64字符串创建SM2加密解密器
+     *
+     * @param privateKeyB64 私钥base64字符串
+     * @param publicKeyB64  公钥base64字符串
+     * @return SM2Encryption
+     */
+    public static SM2Encryption fromBase64(String privateKeyB64, String publicKeyB64) {
+        byte[] publicKey = Base64.getDecoder().decode(publicKeyB64);
+        BigInteger privateKey = new BigInteger(Base64.getDecoder().decode(privateKeyB64));
         return new SM2Encryption(privateKey, publicKey);
     }
 
-    public static SM2Encryption fromHex(String privateKeyStr, String publicKeyStr) {
-        byte[] publicKey = Hex.decode(publicKeyStr);
-        BigInteger privateKey = new BigInteger(privateKeyStr, 16);
+    /**
+     * 根据私钥/公钥16进制字符串创建SM2加密解密器
+     *
+     * @param privateKeyHex 私钥16进制字符串
+     * @param publicKeyHex  公钥16进制字符串
+     * @return SM2Encryption
+     */
+    public static SM2Encryption fromHex(String privateKeyHex, String publicKeyHex) {
+        byte[] publicKey = Hex.decode(publicKeyHex);
+        BigInteger privateKey = new BigInteger(privateKeyHex, 16);
         return new SM2Encryption(privateKey, publicKey);
     }
 
     /**
      * 签名
      *
-     * @param plainText 待签名文本
-     * @return
-     * @throws GeneralSecurityException
+     * @param plaintext 待签名文本
+     * @return String
+     * @throws GeneralSecurityException 异常
      */
-    public String sign(String plainText) throws GeneralSecurityException {
+    public String sign(String plaintext) throws GeneralSecurityException {
         X9ECParameters parameters = GMNamedCurves.getByOID(GMObjectIdentifiers.sm2p256v1);
         ECParameterSpec parameterSpec = new ECParameterSpec(parameters.getCurve(), parameters.getG(), parameters.getN());
         ECPrivateKeySpec privateKeySpec = new ECPrivateKeySpec(privateKey, parameterSpec);
@@ -183,7 +198,7 @@ public class SM2Encryption {
         // 初始化为签名状态
         signature.initSign(bcecPrivateKey);
         // 传入签名字节
-        signature.update(plainText.getBytes(StandardCharsets.UTF_8));
+        signature.update(plaintext.getBytes(StandardCharsets.UTF_8));
         // 签名
         return Base64.getEncoder().encodeToString(signature.sign());
     }
@@ -191,12 +206,12 @@ public class SM2Encryption {
     /**
      * 验签
      *
-     * @param plainText 待签名文本
-     * @param signText
-     * @return
-     * @throws GeneralSecurityException
+     * @param plaintext 待签名文本
+     * @param sign      已签名文本
+     * @return boolean
+     * @throws GeneralSecurityException 异常
      */
-    public boolean verify(String plainText, String signText) throws GeneralSecurityException {
+    public boolean verify(String plaintext, String sign) throws GeneralSecurityException {
         X9ECParameters parameters = GMNamedCurves.getByOID(GMObjectIdentifiers.sm2p256v1);
         ECParameterSpec parameterSpec = new ECParameterSpec(parameters.getCurve(), parameters.getG(), parameters.getN());
         ECPoint ecPoint = parameters.getCurve().decodePoint(publicKey);
@@ -206,29 +221,28 @@ public class SM2Encryption {
         Signature signature = Signature.getInstance(GMObjectIdentifiers.sm2sign_with_sm3.toString(), PROVIDER);
         // 初始化为验签状态
         signature.initVerify(bcecPublicKey);
-        signature.update(plainText.getBytes(StandardCharsets.UTF_8));
-        return signature.verify(Base64.getDecoder().decode(signText));
+        signature.update(plaintext.getBytes(StandardCharsets.UTF_8));
+        return signature.verify(Base64.getDecoder().decode(sign));
     }
 
     /**
      * 证书验签
      *
      * @param certText  证书串
-     * @param plainText 签名原文
-     * @param signText  签名产生签名值 此处的签名值实际上就是 R和S的sequence
-     * @return
-     * @throws GeneralSecurityException
+     * @param plaintext 签名原文
+     * @param sign  签名产生签名值 此处的签名值实际上就是 R和S的sequence
+     * @return boolean
+     * @throws GeneralSecurityException 异常
      */
-    public boolean certVerify(String certText, String plainText, String signText) throws GeneralSecurityException {
+    public boolean certVerify(String certText, String plaintext, String sign) throws GeneralSecurityException {
         // 解析证书
         CertificateFactory factory = new CertificateFactory();
-        X509Certificate certificate = (X509Certificate) factory.engineGenerateCertificate(
-                new ByteArrayInputStream(Base64.getDecoder().decode(certText)));
+        X509Certificate certificate = (X509Certificate) factory.engineGenerateCertificate(new ByteArrayInputStream(Base64.getDecoder().decode(certText)));
         // 验证签名
         Signature signature = Signature.getInstance(certificate.getSigAlgName(), PROVIDER);
         signature.initVerify(certificate);
-        signature.update(plainText.getBytes(StandardCharsets.UTF_8));
-        return signature.verify(Base64.getDecoder().decode(signText));
+        signature.update(plaintext.getBytes(StandardCharsets.UTF_8));
+        return signature.verify(Base64.getDecoder().decode(sign));
     }
 
 
@@ -238,7 +252,7 @@ public class SM2Encryption {
      * SM2秘钥的组成部分有 私钥D 、公钥X 、 公钥Y , 他们都可以用长度为64的16进制的HEX串表示，
      * <br/>SM2公钥并不是直接由X+Y表示 , 而是额外添加了一个头
      *
-     * @return
+     * @return KeyPair
      */
     public static KeyPair<byte[], BigInteger> genKeyPair() throws InvalidAlgorithmParameterException {
         return genKeyPair(false);
@@ -251,7 +265,7 @@ public class SM2Encryption {
      * <br/>SM2公钥并不是直接由X+Y表示 , 而是额外添加了一个头，当启用压缩时:公钥=有头+公钥X ，即省略了公钥Y的部分
      *
      * @param compressed 是否压缩公钥（加密解密都使用BC库才能使用压缩）
-     * @return
+     * @return KeyPair
      */
     public static KeyPair<byte[], BigInteger> genKeyPair(boolean compressed) throws InvalidAlgorithmParameterException {
         //1.创建密钥生成器
@@ -282,10 +296,7 @@ public class SM2Encryption {
 
     public static KeyPair<String, String> genKeyPairAsHex(boolean compressed) throws InvalidAlgorithmParameterException {
         final KeyPair<byte[], BigInteger> pair = genKeyPair(compressed);
-        return new KeyPair<>(
-                pair.getPrivateKey().toString(16),
-                Hex.toHexString(pair.getPublicKey())
-        );
+        return new KeyPair<>(pair.getPrivateKey().toString(16), Hex.toHexString(pair.getPublicKey()));
     }
 
     public static KeyPair<String, String> genKeyPairAsBase64() throws InvalidAlgorithmParameterException {
@@ -294,9 +305,6 @@ public class SM2Encryption {
 
     public static KeyPair<String, String> genKeyPairAsBase64(boolean compressed) throws InvalidAlgorithmParameterException {
         final KeyPair<byte[], BigInteger> pair = genKeyPair(compressed);
-        return new KeyPair<>(
-                Base64.getEncoder().encodeToString(pair.getPrivateKey().toByteArray()),
-                Base64.getEncoder().encodeToString(pair.getPublicKey())
-        );
+        return new KeyPair<>(Base64.getEncoder().encodeToString(pair.getPrivateKey().toByteArray()), Base64.getEncoder().encodeToString(pair.getPublicKey()));
     }
 }
