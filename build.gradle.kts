@@ -16,6 +16,8 @@
 
 import java.io.ByteArrayOutputStream
 import java.net.URI
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 buildscript {
     dependencies {
@@ -143,6 +145,11 @@ tasks.register<Jar>("sourcesJar") {
     description = "Create the sources jar"
     from(sourceSets.main.get().allSource)
     archiveClassifier.set("sources")
+
+    into("META-INF/maven/$project.group/$project.name") {
+        from(project.layout.projectDirectory.dir("mavenJava").file("pom-default.xml"))
+        rename(".*", "pom.xml")
+    }
 }
 
 tasks.register<Jar>("javadocJar") {
@@ -151,10 +158,14 @@ tasks.register<Jar>("javadocJar") {
     archiveClassifier.set("javadoc")
 }
 
+
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             artifactId = projectName
+            groupId = project.group.toString()
+            version = project.version.toString()
+
             from(components["java"])
             artifact(tasks["sourcesJar"])
             artifact(tasks["javadocJar"])
@@ -171,11 +182,11 @@ publishing {
                 }
                 developers {
                     developer {
-                        id.set("Various")
+                        id.set("chaoxin.lu")
                         organization.set("Piston")
                     }
                     developer {
-                        id.set("Hans-Peter Grahsl")
+                        id.set("chaoxin.lu")
                     }
                 }
                 scm {
