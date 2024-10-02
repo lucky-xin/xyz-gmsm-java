@@ -1,8 +1,10 @@
 package xyz.encryption;
 
 import org.bouncycastle.crypto.engines.SM2Engine;
+import org.bouncycastle.util.BigIntegers;
 import org.bouncycastle.util.encoders.Hex;
 
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -23,6 +25,10 @@ public class Sm2Util {
         String plainText = "国密算法SM2";
         String pubKey = "04ca5bf8843863d518bfbed316c6b67c7f807fc3436790556c336ddf3a1ca93ae7537f658c222c7f307be57328222256e12d2e26abb8e0160d2501306d64b41266";
         String priKey = "90bb8703d31503624a526f766cfa47d3d8c10055e94046bf99b56cecc9aa4bb6";
+        BigInteger privateKey = new BigInteger(priKey, 16);
+        System.out.println(privateKey);
+
+        System.out.println(new BigInteger(priKey.getBytes(StandardCharsets.UTF_8)));
         SM2Encryption encryption = SM2Encryption.fromHex(priKey, pubKey);
         System.out.printf("\npubKey : %s\npriKey : %s\n", pubKey, priKey);
         System.out.println("-----------------");

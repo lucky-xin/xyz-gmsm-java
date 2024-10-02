@@ -1,5 +1,7 @@
 package xyz.encryption;
 
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.TypeReference;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.gm.GMNamedCurves;
 import org.bouncycastle.asn1.gm.GMObjectIdentifiers;
@@ -156,6 +158,19 @@ public class SM2Encryption {
     }
 
     /**
+     * SM2解密算法
+     *
+     * @param cipher 密文数据
+     * @param mode   密文排列方式
+     * @return T
+     */
+    public <T> T decryptObject(byte[] cipher, SM2Engine.Mode mode, TypeReference<T> reference)
+            throws InvalidCipherTextException {
+        byte[] decrypt = this.decrypt(cipher, mode);
+        return JSON.parseObject(decrypt, reference.getType());
+    }
+
+    /**
      * 根据私钥/公钥base64字符串创建SM2加密解密器
      *
      * @param privateKeyB64 私钥base64字符串
@@ -255,7 +270,7 @@ public class SM2Encryption {
      *
      * @param certText  证书串
      * @param plaintext 签名原文
-     * @param sign  签名产生签名值 此处的签名值实际上就是 R和S的sequence
+     * @param sign      签名产生签名值 此处的签名值实际上就是 R和S的sequence
      * @return boolean
      * @throws GeneralSecurityException 异常
      */

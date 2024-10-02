@@ -33,7 +33,7 @@ plugins {
 }
 
 group = "xyz.encryption"
-version = "1.0.0"
+version = "1.0.2"
 description = "GM SM2/SM3/SM4 encryption."
 
 val projectName = "xyz-gmsm-java"
@@ -46,10 +46,12 @@ extra.apply {
     set("junit.jupiter.version", "5.11.0")
     set("bcprov.jdk18on.version", "1.78.1")
     set("lombok.version", "1.18.34")
+    set("fastjson2.version", "2.0.53")
 }
 
 dependencies {
     implementation("org.bouncycastle:bcprov-jdk18on:${project.extra["bcprov.jdk18on.version"]}")
+    implementation("com.alibaba.fastjson2:fastjson2:${project.extra["fastjson2.version"]}")
 
     compileOnly("org.projectlombok:lombok:${project.extra["lombok.version"]}")
 }
