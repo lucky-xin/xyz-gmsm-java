@@ -129,6 +129,28 @@ public class SM2Encryption {
     }
 
     /**
+     * SM2加密算法
+     *
+     * @param data 待加密的数据
+     * @param mode 密文排列方式
+     * @return 16进制密文，BC库产生的密文带由04标识符，与非BC库对接时需要去掉开头的04
+     */
+    public String encrypt2Hex(byte[] data, SM2Engine.Mode mode) throws InvalidCipherTextException {
+        return Hex.toHexString(encrypt(data, mode));
+    }
+
+    /**
+     * SM2加密算法
+     *
+     * @param data 待加密的数据
+     * @param mode 密文排列方式
+     * @return Base64密文，BC库产生的密文带由04标识符，与非BC库对接时需要去掉开头的04
+     */
+    public String encrypt2Base64(byte[] data, SM2Engine.Mode mode) throws InvalidCipherTextException {
+        return Base64.getEncoder().encodeToString(encrypt(data, mode));
+    }
+
+    /**
      * SM2解密算法
      *
      * @param cipher 密文数据
@@ -155,6 +177,28 @@ public class SM2Encryption {
             System.arraycopy(cipher, 0, bytes, 1, cipher.length);
             return sm2Engine.processBlock(bytes, 0, bytes.length);
         }
+    }
+
+    /**
+     * SM2解密算法
+     *
+     * @param cipher 密文数据
+     * @param mode   密文排列方式
+     * @return byte[]
+     */
+    public byte[] decryptHex(String cipher, SM2Engine.Mode mode) throws InvalidCipherTextException {
+        return decrypt(Hex.decode(cipher), mode);
+    }
+
+    /**
+     * SM2解密算法
+     *
+     * @param cipher 密文数据
+     * @param mode   密文排列方式
+     * @return byte[]
+     */
+    public byte[] decryptBase64(String cipher, SM2Engine.Mode mode) throws InvalidCipherTextException {
+        return decrypt(Base64.getDecoder().decode(cipher), mode);
     }
 
     /**
