@@ -2,8 +2,6 @@ package xyz.encryption;
 
 import org.bouncycastle.util.encoders.Hex;
 
-import java.nio.charset.StandardCharsets;
-
 /**
  * Sm2Util
  *
@@ -14,20 +12,16 @@ import java.nio.charset.StandardCharsets;
 public class Sm4Util {
 
     public static void main(String[] args) throws Exception {
-        String plainText = """
-                SM4分组密码算法是我国自主设计的分组对称密码算
-                """;
+        String plaintext = "SM4分组密码算法是我国自主设计的分组对称密码算, SM4!";
+        byte[] plaintextBytes = plaintext.getBytes();
 
-        String key = SM4Encryption.generateRandomKey();
-        SM4Encryption sm4Encryption = new SM4Encryption();
-        String encrypted = sm4Encryption.encrypt2Hex(plainText.getBytes(StandardCharsets.UTF_8), key);
+        SM4Encryption sm4 = SM4Encryption.fromBase64(SM4Encryption.generateRandomKey(), SM4Encryption.generateRandomKey());
+        // 加密
+        byte[] encrypted = sm4.encrypt(plaintextBytes);
+        System.out.println("Encrypted: " + Hex.toHexString(encrypted));
 
-        System.out.println(key);
-        System.out.println("密钥：" + key);
-        System.out.println("密文：" + encrypted);
-
-        byte[] decrypted = sm4Encryption.decrypt(Hex.decode(encrypted), key);
-        System.out.println("解密内容：" + new String(decrypted, StandardCharsets.UTF_8));
-
+        // 解密
+        byte[] decrypted = sm4.decrypt(encrypted);
+        System.out.println("Decrypted: " + new String(decrypted));
     }
 }
