@@ -111,16 +111,16 @@ public class SM2 {
      * @return 密文，BC库产生的密文带由04标识符，与非BC库对接时需要去掉开头的04
      */
     public byte[] encrypt(byte[] data, SM2Engine.Mode mode) throws InvalidCipherTextException {
-        final ASN1ObjectIdentifier sm2p256v1 = GMObjectIdentifiers.sm2p256v1;
+        ASN1ObjectIdentifier sm2p256v1 = GMObjectIdentifiers.sm2p256v1;
         // 获取一条SM2曲线参数
-        X9ECParameters parameters = GMNamedCurves.getByOID(sm2p256v1);
+        X9ECParameters x9ecp = GMNamedCurves.getByOID(sm2p256v1);
         // 构造ECC算法参数，曲线方程、椭圆曲线G点、大整数N
-        ECNamedDomainParameters domainParameters =
-                new ECNamedDomainParameters(sm2p256v1, parameters.getCurve(), parameters.getG(), parameters.getN());
+        ECNamedDomainParameters params =
+                new ECNamedDomainParameters(sm2p256v1, x9ecp.getCurve(), x9ecp.getG(), x9ecp.getN());
         //提取公钥点
-        ECPoint pukPoint = parameters.getCurve().decodePoint(publicKey);
+        ECPoint pukPoint = x9ecp.getCurve().decodePoint(publicKey);
         // 公钥前面的02或者03表示是压缩公钥，04表示未压缩公钥, 04的时候，可以去掉前面的04
-        ECPublicKeyParameters publicKeyParameters = new ECPublicKeyParameters(pukPoint, domainParameters);
+        ECPublicKeyParameters publicKeyParameters = new ECPublicKeyParameters(pukPoint, params);
         SM2Engine sm2Engine = new SM2Engine(mode);
         SecureRandom secureRandom = new SecureRandom();
         // 设置sm2为加密模式
@@ -160,11 +160,11 @@ public class SM2 {
     public byte[] decrypt(byte[] cipher, SM2Engine.Mode mode) throws InvalidCipherTextException {
         final ASN1ObjectIdentifier sm2p256v1 = GMObjectIdentifiers.sm2p256v1;
         //获取一条SM2曲线参数
-        X9ECParameters parameters = GMNamedCurves.getByOID(sm2p256v1);
+        X9ECParameters x9ecp = GMNamedCurves.getByOID(sm2p256v1);
         // 构造ECC算法参数，曲线方程、椭圆曲线G点、大整数N
-        ECNamedDomainParameters namedDomainParameters =
-                new ECNamedDomainParameters(sm2p256v1, parameters.getCurve(), parameters.getG(), parameters.getN());
-        ECPrivateKeyParameters privateKeyParameters = new ECPrivateKeyParameters(privateKey, namedDomainParameters);
+        ECNamedDomainParameters params =
+                new ECNamedDomainParameters(sm2p256v1, x9ecp.getCurve(), x9ecp.getG(), x9ecp.getN());
+        ECPrivateKeyParameters privateKeyParameters = new ECPrivateKeyParameters(privateKey, params);
         SM2Engine sm2Engine = new SM2Engine(mode);
         // 设置sm2为解密模式
         sm2Engine.init(false, privateKeyParameters);
@@ -297,9 +297,9 @@ public class SM2 {
      */
     public boolean verify(String plaintext, String sign) throws GeneralSecurityException {
         X9ECParameters parameters = GMNamedCurves.getByOID(GMObjectIdentifiers.sm2p256v1);
-        ECParameterSpec parameterSpec = new ECParameterSpec(parameters.getCurve(), parameters.getG(), parameters.getN());
+        ECParameterSpec ecps = new ECParameterSpec(parameters.getCurve(), parameters.getG(), parameters.getN());
         ECPoint ecPoint = parameters.getCurve().decodePoint(publicKey);
-        ECPublicKeySpec publicKeySpec = new ECPublicKeySpec(ecPoint, parameterSpec);
+        ECPublicKeySpec publicKeySpec = new ECPublicKeySpec(ecPoint, ecps);
         PublicKey bcecPublicKey = new BCECPublicKey(EC, publicKeySpec, BouncyCastleProvider.CONFIGURATION);
         // 创建签名对象
         Signature signature = Signature.getInstance(GMObjectIdentifiers.sm2sign_with_sm3.toString(), PROVIDER);
