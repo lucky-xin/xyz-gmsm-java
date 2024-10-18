@@ -33,7 +33,7 @@ plugins {
 }
 
 group = "xyz.encryption"
-version = "1.0.4"
+version = "1.1.0"
 description = "GM SM2/SM3/SM4 encryption."
 
 val projectName = "xyz-gmsm-java"

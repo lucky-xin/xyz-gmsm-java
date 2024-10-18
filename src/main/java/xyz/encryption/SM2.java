@@ -44,7 +44,7 @@ import java.util.Objects;
  * @version V 1.0
  * @since 2024-09-25
  */
-public class SM2Encryption {
+public class SM2 {
     private final BigInteger privateKey;
     private final byte[] publicKey;
     private static final String EC = "EC";
@@ -57,7 +57,7 @@ public class SM2Encryption {
         }
     }
 
-    public SM2Encryption(BigInteger privateKey, byte[] publicKey) {
+    public SM2(BigInteger privateKey, byte[] publicKey) {
         this.privateKey = privateKey;
         this.publicKey = publicKey;
     }
@@ -221,10 +221,10 @@ public class SM2Encryption {
      * @param publicKeyB64  公钥base64字符串
      * @return SM2Encryption
      */
-    public static SM2Encryption fromBase64(String privateKeyB64, String publicKeyB64) {
+    public static SM2 fromBase64(String privateKeyB64, String publicKeyB64) {
         byte[] publicKey = Base64.getDecoder().decode(publicKeyB64);
         BigInteger privateKey = new BigInteger(Base64.getDecoder().decode(privateKeyB64));
-        return new SM2Encryption(privateKey, publicKey);
+        return new SM2(privateKey, publicKey);
     }
 
     /**
@@ -234,9 +234,9 @@ public class SM2Encryption {
      * @param publicKeyB64  公钥base64字节数组
      * @return SM2Encryption
      */
-    public static SM2Encryption fromBase64Bytes(byte[] privateKeyB64, byte[] publicKeyB64) {
+    public static SM2 fromBase64Bytes(byte[] privateKeyB64, byte[] publicKeyB64) {
         BigInteger privateKey = new BigInteger(privateKeyB64);
-        return new SM2Encryption(privateKey, publicKeyB64);
+        return new SM2(privateKey, publicKeyB64);
     }
 
     /**
@@ -246,10 +246,10 @@ public class SM2Encryption {
      * @param publicKeyHex  公钥16进制字符串
      * @return SM2Encryption
      */
-    public static SM2Encryption fromHex(String privateKeyHex, String publicKeyHex) {
+    public static SM2 fromHex(String privateKeyHex, String publicKeyHex) {
         byte[] publicKey = Hex.decode(publicKeyHex);
         BigInteger privateKey = new BigInteger(privateKeyHex, 16);
-        return new SM2Encryption(privateKey, publicKey);
+        return new SM2(privateKey, publicKey);
     }
 
     /**
@@ -259,10 +259,10 @@ public class SM2Encryption {
      * @param publicKeyHex  公钥16进制字节数组
      * @return SM2Encryption
      */
-    public static SM2Encryption fromHexBytes(byte[] privateKeyHex, byte[] publicKeyHex) {
+    public static SM2 fromHexBytes(byte[] privateKeyHex, byte[] publicKeyHex) {
         byte[] publicKey = Hex.decode(publicKeyHex);
         BigInteger privateKey = new BigInteger(new String(privateKeyHex, StandardCharsets.UTF_8), 16);
-        return new SM2Encryption(privateKey, publicKey);
+        return new SM2(privateKey, publicKey);
     }
 
     /**

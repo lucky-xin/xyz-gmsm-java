@@ -1,7 +1,6 @@
 package xyz.encryption;
 
 import org.bouncycastle.crypto.engines.SM2Engine;
-import org.bouncycastle.util.BigIntegers;
 import org.bouncycastle.util.encoders.Hex;
 
 import java.math.BigInteger;
@@ -29,7 +28,7 @@ public class Sm2Util {
         System.out.println(privateKey);
 
         System.out.println(new BigInteger(priKey.getBytes(StandardCharsets.UTF_8)));
-        SM2Encryption encryption = SM2Encryption.fromHex(priKey, pubKey);
+        SM2 encryption = SM2.fromHex(priKey, pubKey);
         System.out.printf("\npubKey : %s\npriKey : %s\n", pubKey, priKey);
         System.out.println("-----------------");
         byte[] encryptByts = encryption.encrypt(plainText.getBytes(StandardCharsets.UTF_8), SM2Engine.Mode.C1C3C2);
