@@ -16,8 +16,6 @@
 
 import java.io.ByteArrayOutputStream
 import java.net.URI
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 buildscript {
     dependencies {
@@ -170,7 +168,7 @@ publishing {
 
             from(components["java"])
             artifact(tasks["sourcesJar"])
-            artifact(tasks["javadocJar"])
+//            artifact(tasks["javadocJar"])
 
             pom {
                 name.set(project.name)
