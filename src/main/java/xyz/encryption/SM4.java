@@ -15,7 +15,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * SM4Encryption
+ * SM4
  *
  * @author chaoxin.lu
  * @version V 1.0
@@ -24,7 +24,10 @@ import java.util.Objects;
 public class SM4 {
 
     static {
-        Security.addProvider(new BouncyCastleProvider());
+        BouncyCastleProvider provider = new BouncyCastleProvider();
+        if (Objects.isNull(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME))) {
+            Security.addProvider(provider);
+        }
     }
 
     /**

@@ -10,17 +10,22 @@ import org.bouncycastle.util.encoders.Hex;
 import java.nio.charset.StandardCharsets;
 import java.security.Security;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
- * SM3Encryption
+ * SM3
  *
  * @author chaoxin.lu
  * @version V 1.0
  * @since 2024-09-25
  */
 public class SM3 {
+
     static {
-        Security.addProvider(new BouncyCastleProvider());
+        BouncyCastleProvider provider = new BouncyCastleProvider();
+        if (Objects.isNull(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME))) {
+            Security.addProvider(provider);
+        }
     }
 
     /**

@@ -38,7 +38,7 @@ import java.util.Base64;
 import java.util.Objects;
 
 /**
- * SM2Encryption
+ * SM2
  *
  * @author chaoxin.lu
  * @version V 1.0
