@@ -45,9 +45,9 @@ extra.apply {
 
     // Testing dependencies
     set("junit.jupiter.version", "5.11.0")
-    set("bcprov.jdk18on.version", "1.78.1")
-    set("lombok.version", "1.18.34")
-    set("fastjson2.version", "2.0.53")
+    set("bcprov.jdk18on.version", "1.80")
+    set("lombok.version", "1.18.38")
+    set("fastjson2.version", "2.0.57")
 }
 
 dependencies {
