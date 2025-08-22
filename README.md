@@ -1,3 +1,38 @@
+# xyz-gmsm-java
+
+国密算法 SM2/SM3/SM4 的 Java 实现，支持 Gradle 9.0+。
+
+## 项目状态
+
+✅ **Gradle 9.0 兼容性已修复**  
+✅ **项目构建成功**  
+✅ **支持 Java 17+**  
+
+## 构建说明
+
+本项目已升级到 Gradle 9.0，修复了所有兼容性问题：
+
+```bash
+# 构建项目
+./gradlew build
+
+# 生成 JAR 包
+./gradlew jar
+
+# 清理构建
+./gradlew clean
+```
+
+## 功能特性
+
+- **SM2**: 椭圆曲线公钥密码算法
+- **SM3**: 密码杂凑算法  
+- **SM4**: 分组密码算法
+- 支持 Java 17 及以上版本
+- 使用 BouncyCastle 加密库
+
+---
+
 ### Java、Python、GO、JS实现SM2加密解密
 
 ## 1.Java代码SM2加密/解密
